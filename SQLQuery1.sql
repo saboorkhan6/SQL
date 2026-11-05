@@ -17,6 +17,7 @@ coment
 --int :- stores numerical value
 char (30) :- stores textual data
 varchar(30) :- stores textual data
+
 Datetime 
 float
 */
@@ -810,5 +811,431 @@ on d.deptid =e.deptid
 where salary =(
 select max(salary) from employee)
 
---git
---new
+
+use mydb2
+
+
+--CTE : common table expression; view that dont get stored
+
+/*with ss as 
+(
+select e.name ,e.age,d.deptname from employee e join department d
+on e.deptid = d.deptid
+)
+select * from ss
+
+create view abc as 
+(
+select e.name ,e.age,d.deptname from employee e join department d
+on e.deptid = d.deptid
+)
+select  * from abc
+
+alter view abc as
+(
+select e.name ,e.age,e.salary,d.deptname from employee e join department d
+on e.deptid = d.deptid
+)
+select * from abc */
+
+
+ drop procedure abc
+
+create procedure abc
+as 
+begin
+select * from employee
+end
+
+abc
+
+
+ drop procedure getemploybyid
+
+create  procedure getemploybyid
+@id int
+as 
+begin
+select * from employee 
+where id = @id
+end
+
+
+getemploybyid @id = 2
+
+drop procedure getemploybyname
+
+create  procedure getemploybyname
+@name varchar(20)
+as 
+begin
+select * from employee 
+where name = @name
+end
+
+
+
+
+
+getemploybyname @name = 'Aisha'
+
+
+alter procedure getemploybyname
+@id int,
+@name varchar(30)
+as
+begin
+select * from employee
+where name= @name and id = @id
+end
+
+
+
+
+getemploybyname 5,'sara'
+
+
+--Q3. Display employees of a given department
+--Question: Create a procedure named GetEmployeesByDept that accepts a department ID and displays employees belonging to that department
+
+
+drop procedure GetEmployeesByDept
+
+create procedure GetEmployeesByDept
+@deptid int
+as
+begin
+    select name, salary, age from employee
+    where deptid = @deptid
+END
+
+exec GetEmployeesByDept @deptid=102
+
+
+--Q4. Update an employee's salary
+--Create a procedure named UpdateSalary that accepts an employee ID and a new salary, then updates the employee's salary.
+
+drop procedure updatesalary
+
+create procedure updatesalary
+@id int,
+@new_salary int
+as 
+begin
+update employee
+set salary = @new_salary
+where id = @id
+END
+
+EXEC updatesalary @id = 2, @new_salary = 40000
+
+
+select * from employee where id= 2
+
+
+--Q5. Find employees earning above a given salary
+--Question: Create a procedure named EmployeesAboveSalary that accepts a salary amount and displays employees earning more than that amount.
+
+create procedure  EmployeesAboveSalary 
+@salary int
+as
+begin
+select * from employee
+where salary > @salary
+end
+
+exec  EmployeesAboveSalary @salary = 20000
+
+--Q6. Count employees in a department
+--Question: Create a procedure named CountDeptEmployees that accepts a department ID and displays the department name and total number of employees in it
+drop procedure CountDeptEmployees
+
+create procedure CountDeptEmployees
+@deptid int
+as
+begin
+select d.deptname, COUNT(e.id) AS total_employees from employee e JOIN department d
+on e.deptid = d.deptid
+where d.deptid = @deptid
+group by d.deptname
+END
+
+exec CountDeptEmployees @deptid = 101
+
+--Q7. Find the highest-paid employee
+--Question: Create a procedure named HighestPaidEmployee that displays the name, salary, and department ID of the employee receiving the highest salary.
+
+create procedure HighestPaidEmployee
+as 
+begin
+select name, salary, deptid from employee
+where salary = (
+select MAX(salary) from employee
+)
+end
+
+EXEC HighestPaidEmployee
+
+
+--Q8. Display employees with their department names
+--Question: Create a procedure named DepartmentEmployeeDetails that displays each employee's name, salary, and department name using a JOIN
+
+create procedure DepartmentEmployeeDetails
+as
+begin
+select e.name,e.salary,d.deptname from employee e join department d
+on e.deptid=d.deptid
+end
+
+exec DepartmentEmployeeDetails
+
+--Q9. Display employees with their manager names
+--Question: Create a procedure named EmployeeManagerDetails that displays each employee's name and their manager's name. Employees without managers should also appear.
+
+create procedure EmployeeManagerDetails
+as
+begin
+select e.name as employee_name,   m.name as manager_name from employee e LEFT JOIN employee m
+ON e.managerid = m.id
+end
+
+exec EmployeeManagerDetails
+
+
+--Q10. Display employees earning above their department's average salary
+--Question: Create a stored procedure named EmployeesAboveDeptAvg that accepts a department ID and displays the names and salaries of employees whose salary is greater than the average salary of that department.
+ drop procedure EmployeesAboveDeptAvg
+create procedure EmployeesAboveDeptAvg
+@deptid int
+as
+begin
+select e.name, e.salary, d.deptname from employee e JOIN department d
+ON e.deptid = d.deptid
+where e.deptid = @deptid
+and e.salary > (
+    select avg(salary) from employee
+    where deptid = @deptid
+)
+END
+
+exec EmployeesAboveDeptAvg @deptid=101
+
+
+use mydb2
+drop table employee
+drop table department
+
+
+CREATE TABLE department (
+    deptid INT PRIMARY KEY,
+    deptname VARCHAR(30),
+    deptlocation VARCHAR(40)
+)
+
+CREATE TABLE employee (
+    id INT PRIMARY KEY,
+    name VARCHAR(30),
+    age INT,
+    salary INT,
+    deptid INT,
+    managerid INT,
+    FOREIGN KEY (deptid) REFERENCES department(deptid)
+)
+
+INSERT INTO department (deptid, deptname, deptlocation)
+VALUES
+(100, 'HR', 'Lal Bazaar'),
+(101, 'IT', 'Lal Chowk'),
+(102, 'Finance', 'Hazratbal'),
+(103, 'Marketing', 'Srinagar'),
+(104, 'Sales', 'Bemina')
+
+INSERT INTO employee (id, name, age, salary, deptid, managerid)
+VALUES
+(1, 'Aisha', 25, 50000, 101, 3),
+(2, 'Rahul', 28, 35000, 100, 3),
+(3, 'Zoya', 35, 70000, 101, NULL),
+(4, 'Amir', 30, 45000, 102, 3),
+(5, 'Sara', 32, 60000, 100, NULL),
+(6, 'Imran', 24, 30000, 101, 1),
+(7, 'Arjun', 27, 40000, 102, 3),
+(8, 'Mehak', 29, 55000, 101, 3),
+(9, 'Danish', 31, 25000, 100, 2)
+
+select * from department
+select * from employee
+
+--system stored procedures
+
+sp_help 'employee'    --all info of that table
+
+
+sp_tables --total number of tables
+
+sp_columns 'employee'     --columns in that particular table
+
+sp_spaceused 'department'    --total storage taken by that table
+
+
+sp_rename 'employee.name' , 'new_name'  
+
+
+sp_rename 'employee.age' , 'new_age' , 'column'
+
+
+--to delete column which has constraints on it - delete the contraints (drop constraint 'id code of error') then drop the column
+
+
+
+--H/w : get more sp with their use
+
+sp_databases -- enuerates all databases 
+
+sp_pkeys --- returens primary key constarints
+
+sp_fkeys -- identifies all foriegn key relationships
+
+sp_attach_db --attaches an existing database
+
+sp_cycle_errorlog --closes the active error log file
+
+sp_depends --maps database object dependencies , showing which tables /views are referenced by a procedure , or what object depends on specific table
+
+sp_helpuser -- lists database level security principles,roles and permisins granted within the active daabase framework
+
+sp_helplogins --provides account details for sql server logins
+
+sp_addlogin--deletes a sql server login
+
+sp_helptext --displays the underlying T-SQL definition code of non - encrypted user defined objects 
+
+
+
+use mydb2
+
+--WINDOES FUNCTION
+
+select * ,ROW_NUMBER() over (order by salary desc) as rn
+from employee
+
+
+select * ,Rank() over (order by salary desc) as rn
+from employee
+
+
+select * ,dense_rank() over (order by salary desc) as rn
+from employee
+
+
+
+select name,salary,deptid,
+sum (salary) over (partition by deptid) as total_sal,
+avg(salary) over (partition by deptid) as avg_sal
+from employee
+
+
+use mydb2
+
+--max and min slary using windows
+
+select name,salary,deptid,
+max(salary) over (partition by deptid) as max_sal
+from employee
+
+select name,salary,deptid,
+min(salary) over (partition by deptid) as min_sal
+from employee
+
+--difference between avg dept. salary and individual salary
+
+select name,salary,deptid,
+avg(salary) over (partition by deptid) as sal_diff
+from employee
+
+--to check how many employees share the same salary (count)
+select salary ,count(*) from employee
+group by salary
+
+--to order the count in desc 
+select salary ,count(*) as num_emp from employee
+group by salary
+order by num_emp desc
+
+
+--doing the same using windows function
+select name,salary,
+count(*) over (partition by salary) as sal_count
+from employee
+
+
+--Lag : shows previous value
+--lead : shows next value (based on order)
+--syntax : e.g. lag(col_name,steps)
+
+
+--1 step
+select id , name, deptid , salary,
+lag(salary,1) over (partition by deptid order by salary desc) as prev_sal     
+from employee                                                               
+
+
+select id , name, deptid , salary,
+lead(salary,1) over (partition by deptid order by salary desc) as next_sal
+from employee
+
+--2 steps
+
+select id , name, deptid , salary,
+lag(salary,2) over (partition by deptid order by salary desc) as prev_sal2     
+from employee                                                               
+
+
+select id , name, deptid , salary,
+lead(salary,2) over (partition by deptid order by salary desc) as next_sal2
+from employee
+
+
+use mydb2
+
+/*
+TRANSACTION : its a commant to manage data in database
+An SQL transaction is a single logical unit of work that groups one or more SQL queries together to ensure they either all succeed or all fail as a pack.
+
+2 pillars : 
+1. COMMIT : is used to save data permanantly in database
+2. ROLLBACK : is a command that restores the database to last commit state
+*/
+-- default 
+
+--banking system to understand the same 
+ drop table account 
+create table account (
+id int,
+name varchar (30),
+balance int
+)
+
+insert into account values
+(1,'abc',2000),
+(2,'xyz',3000)
+
+select * from account
+
+begin transaction 
+begin try
+
+
+update account 
+set balance = balance - 500 
+where id =1
+---
+---
+---
+update account
+set balance += 500
+where id = 2  
+commit
+end try
+begin catch
+rollback
+end catch
