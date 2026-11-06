@@ -1239,3 +1239,23 @@ end try
 begin catch
 rollback
 end catch
+
+
+
+/*
+ACID : a set of four core rules that guarantee reliable processing of database transactions
+
+1. A — Atomicity ("All or Nothing"):
+A transaction is treated as a single, indivisible unit. Either every SQL statement inside the transaction succeeds, or if one fails, the entire transaction is rolled back so the database is left unchanged.
+• Example: Transferring money from Account A to Account B requires withdrawing from A and depositing into B. Atomicity ensures that if the deposit into B fails, the withdrawal from A is undone
+
+2. C — Consistency ("Valid State to Valid State"):
+A transaction takes the database from one valid state to another, strictly adhering to all database rules, constraints, cascades, and foreign keys. If a transaction breaks a rule (like inserting a null value into a mandatory column), it fails and rolls back
+
+3. I — Isolation ("No Interference/Independent execution"):
+Concurrent transactions run independently without seeing each other's half-finished or intermediate changes. Even if multiple users or apps run queries at the exact same time, isolation keeps them separated based on defined isolation levels
+
+4.D — Durability ("Permanent Changes"):
+Once a transaction is committed using a COMMIT statement, the updates are permanent. Even if the system crashes, loses power, or restarts immediately afterward, the saved data survives
+
+*/
