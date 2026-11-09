@@ -1019,9 +1019,6 @@ and e.salary > (
 END
 
 exec EmployeesAboveDeptAvg @deptid=101
-
-
-use mydb2
 drop table employee
 drop table department
 
@@ -1064,6 +1061,9 @@ VALUES
 
 select * from department
 select * from employee
+
+use mydb2
+
 
 --system stored procedures
 
@@ -1259,3 +1259,45 @@ Concurrent transactions run independently without seeing each other's half-finis
 Once a transaction is committed using a COMMIT statement, the updates are permanent. Even if the system crashes, loses power, or restarts immediately afterward, the saved data survives
 
 */
+
+
+ use mydb2
+
+ select * from employee
+--Trigger 
+
+create trigger t_update
+on employee
+after update
+as begin
+print('updated succesfully')
+end
+
+update employee
+set name = 'saboor'
+where id=3
+
+
+
+create trigger t_del
+on employee
+after delete
+as begin
+print('deleted successfully ')
+end
+
+delete from employee
+where id=2
+
+--INDEX : reduces retrieval time
+--1. clustered 
+--2. Non clustered
+
+
+
+sp_helpindex 'employee'
+
+create nonclustered index idx_name
+on employee(name)
+
+drop index idx_name on employee
